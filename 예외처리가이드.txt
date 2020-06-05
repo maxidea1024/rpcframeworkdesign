@@ -1,0 +1,91 @@
+/*
+
+	-- 옵션에 따라서 exception의 ID를 반환하는 경우, exception 정의에 강제로 ID를 설정해야하는 의무가 부여됨.
+	-- 옵션에 따라서 exception 내용을 문자열로 시리얼라이징해서 전송할지 여부를 설정할 수 있어야함.
+
+
+	예외 설정시에 구태여 예외 변수명을 지정할 필요는 없어보임.
+
+	예외를 리턴 받는 대신에 오류 코드를 받도록 코드를 생성할 경우에는 `exception`에 강제로 `exception code`를
+	지정해야함. `exception` 객체의 필드는 문자열로 변환되어 클라이언트에 전송될 수 있음. 단, 이때 옵션에 따라서
+	개발 과정에서만 보내진다던지 할 수 있도록 함.
+
+	클라이언트 쪽이야 오류코드로 처리하면 되지만, 서버쪽에서는 예외를 사용할지 오류코드를 사용할지 여부가 좀
+	고민이 된다. C# 등의 언어에서야 예외를 비교적 자연스럽게 사용하면 되지만,
+	C++에서는 사용해도 되는건지?
+
+	그냥 사용해볼까... 아니면 이것도 옵션으로 처리하면 되는건지?
+
+*/
+
+namespace * FS2;
+
+
+/**
+ * 내부적으로 로직 오류가 발생했을 경우 throw.
+ */
+exception(1000) LogicException {
+	@1 errorMessage :string;
+}
+
+/**
+ * I/O 작업도중 예외가 발생했을 경우에 throw.
+ */
+exception(1001) IOException {
+}
+
+/**
+ * 요청한 내용을 찾지 못하였을 경우에 throw.
+ */
+exception(1002) NotFoundException {
+}
+
+/**
+ * 접근이 거부 되었을때 throw.
+ */
+exception(1003) AccessDeniedException {
+}
+
+// Service definition
+service MyService extends ServiceBase {
+	@30000 ModifyUserInfo(
+				/** 유저 ID */
+				userID :int,
+				/** 변경할 레벨 수치 */
+				newLevel :int)
+			throws(
+				/** I/O 작업도중 문제가 발생했습니다. */
+				@1 IOException,
+
+				/** 해당 유저를 찾지 못하였습니다. */
+				@2 NotFoundException,
+
+				/** 접근이 거부되었습니다. */
+				@3 AccessDeniedException);
+}
+
+// Simple service definition
+sservice MyService extends ServiceBase {
+	@30000 ModifyUserInfo(ModifyUserInfoRequest) :ModifyUserInfoReply
+			throws(
+				/** I/O 작업도중 문제가 발생했습니다. */
+				@1 IOException,
+				/** 해당 유저를 찾지 못하였습니다. */
+				@2 NotFoundException,
+				/** 접근이 거부되었습니다. */
+				@3 AccessDeniedException
+			);
+}
+
+struct ModifyUserInfoRequest {
+	
+}
+
+struct ModifyUserInfoReply {
+	
+}
+
+
+rtservice Chatting {
+	
+}
